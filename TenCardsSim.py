@@ -32,7 +32,7 @@ def lessThanTwo2Pairs(arr):
 # Sims drawing 10 cards
 def simulate():
     arr = random.sample(cards, 10)
-    return lessThanTwo2Pairs(arr) #change this to run other sims
+    return checkTriple(arr) #change this to run other sims
 
 # Runs sims
 if __name__=="__main__":
