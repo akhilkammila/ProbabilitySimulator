@@ -1,0 +1,13 @@
+import random
+import matplotlib.pyplot as plt
+from collections import Counter
+
+x = [i for i in range(10)]
+y = [i for i in range(10)]
+
+fig, axes = plt.subplots(2)
+fig.suptitle('Vertically stacked subplots')
+axes[0].plot(x, y)
+axes[1].plot(x, y)
+
+plt.show()

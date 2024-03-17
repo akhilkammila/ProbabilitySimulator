@@ -5,7 +5,7 @@ Guess: 25%
 
 trials = 0
 successful = 0
-for i in range(20, 30):
+for i in range(10, 100):
     for j in range(10,100):
         if i*j < 1000: successful += 1
         trials += 1
