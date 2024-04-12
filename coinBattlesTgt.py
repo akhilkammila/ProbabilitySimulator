@@ -8,8 +8,6 @@ If same ev: win margin * win %  are equal
 If different ev: 
     we should have x less rolls than the other guy
     # less rolls when we win - # more rolls when we lose = ev diff
-
-
 """
 
 import random
@@ -56,11 +54,19 @@ def plot(hhCounts, htCounts):
 
     plt.show()
 
+def convertString(seq):
+    return [c == 'T' for c in seq]
+
 if __name__ == "__main__":
     trials = 10000
 
-    seq1 = [0, 0, 1]
-    seq2 = [0, 1, 1]
+    seq1 = "THH"
+    seq2 = "TTH"
+
+    seq1 = convertString(seq1)
+    seq2 = convertString(seq2)
+
+    print(seq1, seq2)
 
     seq1Counts = []
     seq2Counts = []
@@ -87,5 +93,5 @@ if __name__ == "__main__":
     print(sum(seq1Counts)/trials)
     print(sum(seq2Counts)/trials)
     print(sum(margin1)/len(margin1), sum(margin2)/len(margin2))
-    plot(seq1Counts, seq2Counts)
-    plot(margin1, margin2)
+    # plot(seq1Counts, seq2Counts)
+    # plot(margin1, margin2)

@@ -41,7 +41,6 @@ def plot(hhCounts, htCounts):
 
     plt.show()
 
-
 if __name__ == "__main__":
     tests = 100000
     length = 100
@@ -63,7 +62,6 @@ if __name__ == "__main__":
 
         hhCounts.append(HH)
         htCounts.append(HT)
-
 
     print(hhWins, htWins, ties, total)
     print(sum(hhCounts), sum(htCounts), sum(hhCounts)/total, sum(htCounts)/total)
