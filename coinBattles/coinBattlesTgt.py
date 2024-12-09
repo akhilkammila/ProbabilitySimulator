@@ -55,13 +55,13 @@ def plot(hhCounts, htCounts):
     plt.show()
 
 def convertString(seq):
-    return [c == 'T' for c in seq]
+    return [c == 'H' for c in seq]
 
 if __name__ == "__main__":
     trials = 10000
 
-    seq1 = "THH"
-    seq2 = "TTH"
+    seq1 = "HTTH"
+    seq2 = "HTHT"
 
     seq1 = convertString(seq1)
     seq2 = convertString(seq2)
