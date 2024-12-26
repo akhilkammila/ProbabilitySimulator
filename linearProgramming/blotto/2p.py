@@ -59,9 +59,10 @@ if __name__ == "__main__":
     A = [
     [2, -1],  # Payoffs if the row player chooses strategy 1
     [1,  3],  # Payoffs if the row player chooses strategy 2
-    [0, -2]   # Payoffs if the row player chooses strategy 3
+    [0, 5]   # Payoffs if the row player chooses strategy 3
     ]
 
+    B = np.transpose(-np.array(A))
     x_opt, v_opt = solve_zero_sum_game(A)
     print("Optimal mixed strategy for the row player:", x_opt)
     print("Value of the game:", v_opt)

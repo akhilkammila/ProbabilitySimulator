@@ -1,6 +1,8 @@
 import numpy as np
 from scipy.optimize import linprog
 from math import comb
+from itertools import permutations
+
 
 def solve_zero_sum_game(A):
     """
@@ -95,68 +97,94 @@ def solve_zero_sum_game(A):
     # v (or w) is the value of the game.
     return x, y, v
 
-def generate_distributions(N, M):
+def generate_unique_distributions(N, M):
     """
-    Generate all possible distributions of N identical soldiers into M armies.
-    Each distribution is an M-dimensional vector of nonnegative integers summing to N.
+    Generate all unique distributions of N identical soldiers into M armies,
+    treating distributions that are permutations of each other as identical.
+    Each distribution is sorted in non-decreasing order.
     """
-    # This can be done using a recursive generator or an iterative approach.
-    # A classic approach is to use "stars and bars" logic.
-    # We'll generate combinations that represent the dividers positions.
-    
-    # Number of solutions to x_1 + x_2 + ... + x_M = N is C(N+M-1, M-1)
-    # We'll generate them lexicographically.
-    
-    # One approach: we can use a recursive generator:
-    def backtrack(remaining, slots):
+    def backtrack(remaining, slots, current):
         if slots == 1:
-            yield [remaining]
+            yield current + [remaining]
         else:
             for i in range(remaining + 1):
-                for rest in backtrack(remaining - i, slots - 1):
-                    yield [i] + rest
+                yield from backtrack(remaining - i, slots - 1, current + [i])
 
-    return list(backtrack(N, M))
+    unique_distributions = set()
+    for dist in backtrack(N, M, []):
+        sorted_dist = tuple(sorted(dist))
+        unique_distributions.add(sorted_dist)
+    return sorted(unique_distributions)
 
-def build_payoff_matrix(N, M):
+def build_payoff_matrix(N, M, row_strategies, col_strategies):
     """
-    Build the payoff matrix for a Blotto game with N soldiers and M armies.
-    Rows correspond to row player's strategies, columns to column player's strategies.
-    Payoff is from the row player's perspective.
+    Build the payoff matrix for the Blotto game.
+    Payoff is from the row player's perspective and averaged over all permutations
+    of the column player's strategy.
     """
-    row_strategies = generate_distributions(N, M)
-    col_strategies = generate_distributions(N, M)
+    A = np.zeros((len(row_strategies), len(col_strategies)))
 
-    R = len(row_strategies)
-    C = len(col_strategies)
-
-    A = np.zeros((R, C))
-
-    # Compute payoff for each pair of strategies
+    # Precompute all unique permutations for each column strategy
+    permutation_cache = {}
+    for j, y in enumerate(col_strategies):
+        if y not in permutation_cache:
+            permutation_cache[y] = list(set(permutations(y)))
+    
+    # Compute average payoff for each pair of unique strategies
     for i, x in enumerate(row_strategies):
         for j, y in enumerate(col_strategies):
-            # Compare allocations battlefield by battlefield
-            payoff = 0
-            for xi, yi in zip(x, y):
-                if xi > yi:
-                    payoff += 1
-                elif xi < yi:
-                    payoff -= 1
-                else:
-                    payoff += 0
-            A[i, j] = payoff
+            perms_y = permutation_cache[y]
+            total_payoff = 0
+            for perm_y in perms_y:
+                payoff = sum(
+                    1 if xi > yi else -1 if xi < yi else 0
+                    for xi, yi in zip(x, perm_y)
+                )
+                total_payoff += payoff
+            average_payoff = total_payoff / len(perms_y)
+            A[i, j] = average_payoff
 
-    return A, row_strategies, col_strategies
+    return A
+
+import numpy as np
+
+def evaluate_all_strategies(row_strats, x_opt, col_strats, A):
+    """
+    Evaluates and prints the expected value of the row player's mixed strategy
+    against each unique column strategy.
+
+    Parameters:
+        row_strats (list of tuples): Unique sorted row strategies.
+        x_opt (array-like): Optimal mixed strategy for the row player (probabilities over row_strats).
+        col_strats (list of tuples): Unique sorted column strategies.
+        A (numpy.ndarray): Payoff matrix where A[i, j] is the average payoff for row_strats[i] vs col_strats[j].
+
+    Returns:
+        None
+    """
+    print("Evaluating Row Player's optimal mixed strategy against all Column Strategies:\n")
+    for j, col_strat in enumerate(col_strats):
+        # Compute the expected value: EV = sum over i (x_opt[i] * A[i, j])
+        ev = np.dot(x_opt, A[:, j])
+        print(f"Against Column Strategy {j + 1} {col_strat}: Expected Value (EV) = {ev:.4f}")
+
 
 if __name__ == "__main__":
     # Example: small numbers due to combinational explosion
-    N = 5  # soldiers
+    N = 10  # soldiers
     M = 3  # armies
-    A, row_strats, col_strats = build_payoff_matrix(N, M)
-    x_opt, y_opt, v_opt = solve_zero_sum_game(A)
+
+    row_strats = generate_unique_distributions(N, M)
+    col_strats = generate_unique_distributions(N, M)
+    A = build_payoff_matrix(N, M, row_strats, col_strats)
     # print("Payoff matrix shape:", A.shape)
+    # print(row_strats)
+    # print(col_strats)
     # print("Payoff matrix A:\n", A)
 
+    x_opt, y_opt, v_opt = solve_zero_sum_game(A)
+
+    print("Value of game:", v_opt)
     print("Optimal strategy for row player (x):")
     for strat, prob in zip(row_strats, x_opt):
         if prob != 0: print(strat, prob)
@@ -164,4 +192,3 @@ if __name__ == "__main__":
     print("Optimal strategy for column player (y):")
     for strat, prob in zip(col_strats, y_opt):
         if prob != 0: print(strat, prob)
-
