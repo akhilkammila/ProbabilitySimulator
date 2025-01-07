@@ -1,0 +1,10 @@
+Total gain(sigma) = Sum of Action Gain
+
+Action gain(a, sigma) = max(0, u(a, sigma) - u(sigma))
+    u(a, sigma) is utility if I play a, and all others play sigma
+    u(sigma) is utility if all play sigma
+
+    only profitable deviations considered
+
+our goal is to MINIMIZE Total gain
+    when total gain == 0, there are no profitable deviationa (so it is an equilibrium)

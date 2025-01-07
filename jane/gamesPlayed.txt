@@ -1,0 +1,73 @@
+Vs Ayush
+
+1. Blotto (with +2 powerup, with different value armies)
+- same army value blotto coded under linearProgramming/blotto (just a payoff matrix --> LP)
+- this also applies for +2 powerup (just different matrix)
+
+- different value armies not coded yet (but this would also just be dif. matrix)
+
+2. Citadel lowest steals game
+- contracts: 1000, 500 or 1500, 1000 150 std, 500 to 1500 uniform
+- each person chooses a value. lowest ones are filled until TOTAL used up (fully filled or not filled at all)
+
+thoughts
+- beat out effect: with small variance, want to keep going lower to beat out everyone else
+(p-win trumps value)
+- steal effect: when a lot of money is available, we can go higher to try to do a low-probability steal
+(value can compete with p-win)
+
+- as variance of contract increases, less efficient, so less total EV
+- variance of contract low --> beat out effect, go low mean
+- variance of contract high --> steal effect, even lower mean?
+                                but now our strat. has higher var, right tail (we can try stealing)
+
+NOT YET CODED - this should be next
+
+3. 5 numbers, 100 tokens bidding game
+- we have 100 tokens to bid with
+- a random number is generated 1-100. each player bids their tokens, whoever bids higher gets it
+- after all 5 numbers are auctioned, player with highest total wins
+
+notes
+- there is some strategy to preserving tokens, so that opponent can not overbid-dominate
+
+- we played BEAT OTHER PLAYER incentive (zero sum), what if:
+-- want to maximize own total
+-- want to maximize total + tokens (saving tokens important too)
+
+
+
+
+On Coding
+easy to code:
+- when the p(choosing an option) is INDEPENDENT (aka EV --> p(choosing option))
+in 100 prizes game, the EV of choosing an option only depends on
+other players choosing the exact same option
+
+this lets us binary search on EV, and EV implies an exact prob. of playing each option
+
+- or when p(choosing an option) depends on only ONE DIRECTION of other options, and there is a base case
+in highest unique game, p(choosing an option) only depends on self + higher valued options
+there is a base case of Highest Option EV == p(exactly 0 people choose that option)
+
+
+
+hard to code:
+- citadel egg game, p(choosing an option) depends on lower values only
+p(value goes thru) == integral (contract pdf * other player cdf from lower vals shifted by val)
+    other player cdf from lower vals is obtained by convoluting the pdf
+    for each contract value, we are multiplying by p(everyone else sums to < contract val - own val
+this is okay, we just need a base case
+
+- base case
+say we choose an EV like 93.5
+we need p(choose 94)
+
+integral (contract pdf * other player cdf from lower vals)
+    but, there are no lower vals, so we need to do start considering own val
+    but, if own val gets too high, there is no consequence (we just end up all getting 94 b/c sum will never be over 1000)
+
+    the true reason 94 isnt always optimal is because if it were, then steal (94 + 60) would be possible
+    this makes finding base case hard
+
+so, how do we do it? explore GRADIENT DESCENT
