@@ -4,6 +4,8 @@ from itertools import permutations
 import time
 import math
 import pandas as pd
+from dataclasses import dataclass
+import seaborn as sns
 
 def generate_unique_distributions(N, M):
     """
@@ -30,7 +32,6 @@ def build_payoff_matrix(row_strategies, col_strategies):
     Payoff is from the row player's perspective and averaged over all permutations
     of the column player's strategy.
     """
-    t1 = time.time()
     data = [(original_list, list(perm)) for original_list in col_strategies for perm in set(permutations(original_list))]
     permutation_df =  pd.DataFrame(data, columns=["Original List", "Permutation"])
     row_df = pd.DataFrame({'Row List': col_strategies})
@@ -42,26 +43,22 @@ def build_payoff_matrix(row_strategies, col_strategies):
 
     perm_cols = [f"Permutation_{i}" for i in range(max_len)]
     row_cols = [f"Row_{i}" for i in range(max_len)]
-    t2 = time.time()
 
-    t3 = time.time()
     combinations_df = pd.merge(permutation_df, row_df, how='cross')
-    t4 = time.time()
 
     combinations_df['num_win'] = ((combinations_df[perm_cols].values - combinations_df[row_cols].values) > 0).sum(axis=1)
     combinations_df['num_lost'] = ((combinations_df[perm_cols].values - combinations_df[row_cols].values) < 0).sum(axis=1)
     combinations_df['result'] = combinations_df['num_win'] - combinations_df['num_lost']
 
-    t5 = time.time()
     final_result = combinations_df.groupby(['Original List', 'Row List'])['result'].mean()
     final_result = final_result.unstack()
-    t6 = time.time()
-
-    print("1 part build:", t2 - t1)
-    print("2 part build:", t4 - t3)
-    print("3 part build:", t5 - t4)
-    print("4 part build:", t6 - t5)
     return final_result
+
+@dataclass
+class resultInfo:
+    num_strategies: int
+    matrix_build_time: int
+    solve_time: int
 
 def timeRun(N, M):
     # Building matrix
@@ -75,25 +72,34 @@ def timeRun(N, M):
     p1, p2 = game.linear_program()
     solve_end = time.time()
 
+    res = resultInfo(len(strategies),  build_end - build_start, solve_end - solve_start)
+    return res
+
+
     print("# strategies:", len(strategies))
     print("N (basic):", math.comb(N+M-1, M-1))
     print("N (actual):", A.shape)
     print("Matrix creation:", build_end - build_start)
     print("Solving:", solve_end - solve_start)
 
-    # print("Row player:")
-    # for strat, prob in zip(strategies, p1):
-    #     if prob > 0:
-    #         print(strat, np.round(prob, decimals=4))
+    print("Row player:")
+    for strat, prob in zip(strategies, p1):
+        if prob > 0:
+            print(strat, np.round(prob, decimals=4))
 
-    # print("Col player:")
-    # for strat, prob in zip(strategies, p2):
-    #     if prob > 0:
-    #         print(strat, np.round(prob, decimals=4))
+    print("Col player:")
+    for strat, prob in zip(strategies, p2):
+        if prob > 0:
+            print(strat, np.round(prob, decimals=4))
 
-    # value = game[p1, p2]
-    # print("EVs:", value)
-    # print("-"*20)
+    value = game[p1, p2]
+    print("EVs:", value)
+    print("-"*20)
 
 
-timeRun(150, 3)
+results = []
+soldiersDist = np.arange(10, 100, 10)
+for soldiers in soldiersDist:
+    results.append(timeRun(soldiers, 3))
+
+sns.scatterplot(x=soldiersDist, y=[res.solve_time for res in results])

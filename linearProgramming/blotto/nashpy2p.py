@@ -1,6 +1,7 @@
 import nashpy as nash
 import numpy as np
 from itertools import permutations
+from sage.games import Game
 
 def generate_unique_distributions(N, M):
     """
@@ -52,24 +53,28 @@ def build_payoff_matrix(row_strategies, col_strategies):
     return A
 
 if __name__ == "__main__":
-    N = 10
+    N = 5
     M = 3
 
     strategies = generate_unique_distributions(N, M)
     A = build_payoff_matrix(strategies, strategies)
 
-    game = nash.Game(A)
-    p1, p2 = game.linear_program()
+    game = Game(A, -A)
+    equilibria = game.lemke_howson()
 
-    print("Row player:")
-    for strat, prob in zip(strategies, p1):
-        if prob > 0:
-            print(strat, np.round(prob, decimals=4))
 
-    print("Col player:")
-    for strat, prob in zip(strategies, p2):
-        if prob > 0:
-            print(strat, np.round(prob, decimals=4))
+    # game = nash.Game(A, -A)
+    # p1, p2 = game.lemke_howson(0)
 
-    value = game[p1, p2]
-    print("EVs:", value)
+    # print("Row player:")
+    # for strat, prob in zip(strategies, p1):
+    #     if prob > 0:
+    #         print(strat, np.round(prob, decimals=4))
+
+    # print("Col player:")
+    # for strat, prob in zip(strategies, p2):
+    #     if prob > 0:
+    #         print(strat, np.round(prob, decimals=4))
+
+    # value = game[p1, p2]
+    # print("EVs:", value)
