@@ -1,20 +1,25 @@
 import nashpy as nash
 import numpy as np
 
-A = [[2,3],[4,1]]
-B = [[1,6],[11,2]]
+kicker = [[3,0],[2,1]]
+goalie = [[3, 2],[0, 1]]
 
-game = nash.Game(A, B)
+game = nash.Game(kicker, goalie)
 
-# Support or vertex enumeration (all solutions)
-for res in game.vertex_enumeration():
-    x = res[0]
-    y = res[1]
-    print(x, y)
+# Support enumeration
+equilibria = game.support_enumeration()
+for eq in equilibria:
+    print(eq)
 
-    payoff1 = np.transpose(x) @ (A @ y)
-    payoff2 = np.transpose(x) @ (B @ y)
-    print(payoff1, payoff2)
+# # Support or vertex enumeration (all solutions)
+# for res in game.vertex_enumeration():
+#     x = res[0]
+#     y = res[1]
+#     print(x, y)
 
-for i in range(4):
-    print(game.lemke_howson(initial_dropped_label=i))
+#     payoff1 = np.transpose(x) @ (A @ y)
+#     payoff2 = np.transpose(x) @ (B @ y)
+#     print(payoff1, payoff2)
+
+# for i in range(4):
+#     print(game.lemke_howson(initial_dropped_label=i))
